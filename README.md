@@ -18,19 +18,19 @@ Takes record or list of records, and returns the result of doing an atomic inser
 
     push_to/3 (Index, Rec, NewVal) -> modified Rec
 
-Takes a record index, a record and a value. Returns `Rec` with `NewVal` pushed into `Index`.
+Takes a record index, a record and a value. Returns `Rec` with `NewVal` pushed into `Index`. Note that unlike `relate/6` and `decouple/6`, this function does no checking on the target (it will happily add duplicates if called).
 
     remove_from/3 (Index, Rec, Prey) -> modified Rec
     
 Takes a record index, a record and a value. Returns `Rec` with the first instance of `Prey` removed from `Rec`.
 
-    relate/6 (Rec1, Id1, Index1, Rec2, Id2, Index2) -> relates records
+    relate/6 (Rec1, Id1, Index1, Rec2, Id2, Index2) -> ok || false
 
-Takes two records, and their corresponding IDs + ID indexes. Atomically relates the two records in `mnesia`. This and `decouple/6` are used in managing many-to-many relationships (this one mutually adds the appropriate `Id` to the appropriate `Index`). Note that these do not check for existence, which should probably be changed before long.
+Takes two records, and their corresponding IDs + ID indexes. Atomically relates the two records in `mnesia`. This and `decouple/6` are used in managing many-to-many relationships (this one mutually adds the appropriate `Id` to the appropriate `Index`). This function *only* succeeds if the given records are currently unrelated, it returns false otherwise.
 
-    decouple/6 (Rec1, Id1, Index1, Rec2, Id2, Index2) -> decouples records
+    decouple/6 (Rec1, Id1, Index1, Rec2, Id2, Index2) -> ok || false
     
-Takes two records, and their corresponding IDs + ID indexes. Atomically decuples the two records in `mnesia`. This and `relate/6` are used in managing many-to-many relationships (this one mutually removes the appropriate `Id` from the appropriate `Index`). Note that these do not check for existence, which should probably be changed before long.
+Takes two records, and their corresponding IDs + ID indexes. Atomically decuples the two records in `mnesia`. This and `relate/6` are used in managing many-to-many relationships (this one mutually removes the appropriate `Id` from the appropriate `Index`). This function *only* succeeds if the given records are mutually related, it returns false otherwise.
 
 ### common
 *Simple functions that I use in lots of places. I'm not entirely sure why they're not in the standard libraries.*

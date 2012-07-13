@@ -24,13 +24,22 @@ remove_from(Index, Rec, Prey) ->
     setelement(Index, Rec, lists:delete(Prey, Val)).
 
 relate(Rec1, Id1, Index1, Rec2, Id2, Index2) ->
-    F = fun() -> mnesia:write(push_to(Index1, Rec1, element(Id2, Rec2))),
-		 mnesia:write(push_to(Index2, Rec2, element(Id1, Rec1)))
-	end,
-    transaction(F).
+    case {lists:member(element(Id2, Rec2), element(Index1, Rec1)),
+	  lists:member(element(Id1, Rec1), element(Index2, Rec2))}  of
+	{false, false} -> F = fun() -> mnesia:write(push_to(Index1, Rec1, element(Id2, Rec2))),
+				       mnesia:write(push_to(Index2, Rec2, element(Id1, Rec1)))
+			      end,    
+			  transaction(F);
+	_ -> false
+    end.
+				  
 
 decouple(Rec1, Id1, Index1, Rec2, Id2, Index2) ->
-    F = fun() -> mnesia:write(remove_from(Index1, Rec1, element(Id2, Rec2))),
-		 mnesia:write(remove_from(Index2, Rec2, element(Id1, Rec1)))
-	end,
-    transaction(F).
+    case {lists:member(element(Id2, Rec2), element(Index1, Rec1)),
+	  lists:member(element(Id1, Rec1), element(Index2, Rec2))}  of
+	{true, true} -> F = fun() -> mnesia:write(remove_from(Index1, Rec1, element(Id2, Rec2))),
+				     mnesia:write(remove_from(Index2, Rec2, element(Id1, Rec1)))
+			    end,
+			transaction(F);
+	_ -> false
+    end.
