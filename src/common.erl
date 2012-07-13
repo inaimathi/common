@@ -8,7 +8,7 @@ binary_to_hex(Bin) ->
     lists:flatten([io_lib:format("~2.16.0B", [X]) || X <- binary_to_list(Bin)]).
 
 make_tempname() ->
-    make_tempname("/tmp").
+    make_tempname(filename:nativename("/tmp")).
 make_tempname(TargetDir) ->
     {A, B, C} = now(),
     [D, E, F] = lists:map(fun integer_to_list/1, [A, B, C]),
