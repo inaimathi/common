@@ -2,7 +2,20 @@
 -include_lib("stdlib/include/qlc.hrl").
 
 -export([do/1, atomic_insert/1, transaction/1]).
--export([relate/6, decouple/6, push_to/3, remove_from/3]).
+-export([find/3, list/1, list/2, relate/6, decouple/6, push_to/3, remove_from/3]).
+
+find(Table, Id, Value) ->
+    try
+	[Rec] = do(qlc:q([X || X <- mnesia:table(Table), element(Id, X) =:= Value])),
+	Rec
+    catch
+	error:_ -> false
+    end.
+
+list(Table) ->
+    db:do(qlc:q([X || X <- mnesia:table(Table)])).
+list(Table, Fields) ->
+    db:do(qlc:q([extract_fields(X, Fields) || X <- mnesia:table(Table)])).
 
 do(Q) -> transaction(fun() -> qlc:e(Q) end).
 
@@ -43,3 +56,6 @@ decouple(Rec1, Id1, Index1, Rec2, Id2, Index2) ->
 			transaction(F);
 	_ -> false
     end.
+
+%%%%%%%%%%%%%%%%%%%% internal utility
+extract_fields(Rec, Fields) -> list_to_tuple(lists:map(fun (F) -> element(F, Rec) end, Fields)).
